@@ -52,8 +52,6 @@ int main() {
             }
         }
         
-        
-        
         memset(P, 0, sizeof(P));
         
         f(0, 0, 0) = 0;
