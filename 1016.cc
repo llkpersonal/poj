@@ -25,6 +25,25 @@ int main() {
     while(scanf("%s", number) != EOF) {
         if(!strcmp(number, "-1")) break;
         map<string, int> inventories;
-        printf("%s\n", get_inventory(number).c_str());
+        string inventory = number;
+        inventories[inventory] = 0;
+        int i;
+        for(i = 1; i <= 15; i++) {
+            inventory = get_inventory(inventory);
+            if(inventories.find(inventory) != inventories.end()) {
+                int k = i - inventories[inventory];
+                if(k == 1) {
+                    if(i == 1) printf("%s is self-inventorying\n", number);
+                    else printf("%s is self-inventorying after %d steps\n", number, i - 1);
+                } else {
+                    printf("%s enters an inventory loop of length %d\n", number, k);
+                }
+                break;
+            }
+            inventories[inventory] = i;
+        }
+        if(i == 16) {
+            printf("%s can not be classified after 15 iterations\n", number);
+        }
     }
 }
