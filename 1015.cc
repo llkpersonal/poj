@@ -5,7 +5,7 @@
 using namespace std;
 
 const int INF = ~0U>>2;
-int F[201][21][901];
+int F[2][21][901];
 bool P[201][21][901];
 
 struct Candidate{
@@ -16,7 +16,7 @@ struct Candidate{
 Candidate candidates[201];
 
 int& f(int i, int j, int k) {
-    return F[i][j][k+400];
+    return F[i % 2][j][k+400];
 }
 
 bool& p(int i, int j, int k) {
@@ -44,7 +44,7 @@ int main() {
             scanf("%d%d", &candidates[i].d, &candidates[i].p);
         }
 
-        for(int i = 0; i < 201; i++) {
+        for(int i = 0; i < 2; i++) {
             for(int j = 0; j <= 20; j++) {
                 for(int k = 0; k < 901; k++) {
                     F[i][j][k] = -INF;
@@ -54,16 +54,14 @@ int main() {
         
         memset(P, 0, sizeof(P));
         
-        f(0, 0, 0) = 0;
-
+        for(int i = 0; i <= 1; i++) {
+            f(i, 0, 0) = 0;
+        }
+        
         for(int i = 1; i <= n; i++) {
-            for(int j = 0; j < 21; j++) {
-                for(int k = -400; k <= 400; k++) {
-                    f(i, j, k) = f(i-1, j, k);
-                }
-            }
             for(int j = 1; j <= min(m,i); j++) {
                 for(int k = -400; k <= 400; k++) {
+                    f(i, j, k) = f(i-1, j, k);
                     if(k - candidates[i].d + candidates[i].p >= -400
                         && k - candidates[i].d + candidates[i].p <= 400) {
                         int t = f(i-1, j-1, k-candidates[i].d+candidates[i].p) + candidates[i].d + candidates[i].p;
