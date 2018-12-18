@@ -29,25 +29,31 @@ int main() {
 
         if(n[3]) {
             int cnt_2 = 0;
-            ans += (n[3] + 3) / 4;
+            ans += n[3] / 4;
             int cnt_3 = n[3] % 4;
-            if(cnt_3 == 1) {
-                cnt_2 = min(n[2], 5);
-            } else if(cnt_3 == 2) {
-                cnt_2 = min(n[2], 3);
-            } else if(cnt_3 == 3) {
-                cnt_2 = min(n[2], 1);
+            if(cnt_3) {
+                ans++;
+                if(cnt_3 == 1) {
+                    cnt_2 = min(n[2], 5);
+                } else if(cnt_3 == 2) {
+                    cnt_2 = min(n[2], 3);
+                } else if(cnt_3 == 3) {
+                    cnt_2 = min(n[2], 1);
+                }
+                n[2] -= cnt_2;
+                int cnt_1 = 36 - 9 * cnt_3 - 4 * cnt_2;
+                n[1] = n[1] - min(n[1], cnt_1);
             }
-            n[2] -= cnt_2;
-            int cnt_1 = 36 - 9 * cnt_3 - 4 * cnt_2;
-            n[1] = n[1] - min(n[1], cnt_1);
         }
 
         if(n[2]) {
-            ans += (n[2] + 8) / 9;
+            ans += n[2] / 9;
             n[2] %= 9;
-            int cnt_1 = 36 - 4 * n[2];
-            n[1] = n[1] - min(n[1], cnt_1);
+            if(n[2]) {
+                ans++;
+                int cnt_1 = 36 - 4 * n[2];
+                n[1] = n[1] - min(n[1], cnt_1);
+            }
         }
 
         ans += (n[1] + 35) / 36;
