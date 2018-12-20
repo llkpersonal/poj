@@ -1,45 +1,42 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <iterator>
+#include <map>
 #include <vector>
 using namespace std;
 
 double get_maximize_b_over_p(vector< vector<int> >& bandwidths, vector< vector<int> >& prices) {
-    static double max_value[100][100];
-    static double total_price[100][100];
-    static double minimize_bandwidth[100][100];
-    memset(max_value, 0, sizeof(max_value));
-    memset(total_price, 0, sizeof(total_price));
-    memset(minimize_bandwidth, 0, sizeof(minimize_bandwidth));
-    
-    int n = bandwidths.size();
-    
-    for(int j = 0; j < bandwidths[0].size(); j++) {
-        max_value[0][j] = bandwidths[0][j] / prices[0][j];
-        total_price[0][j] = prices[0][j];
-        minimize_bandwidth[0][j] = bandwidths[0][j];
+    map<int, int> devices[2];
+    for(int i = 0; i < bandwidths[0].size(); i++) {
+        devices[0][bandwidths[0][i]] = prices[0][i];
     }
     
-    for(int i = 1; i < n; i++) {
+    for(int i = 1; i < bandwidths.size(); i++) {
+        map<int, int>& c_device = devices[i%2];
+        map<int, int>& p_device = devices[(i-1)%2];
+        c_device.clear();
         for(int j = 0; j < bandwidths[i].size(); j++) {
-            for(int k = 0; k < bandwidths[i-1].size(); k++) {
-                double current_minimize_bandwidth = min(minimize_bandwidth[i-1][k], 1.0 * bandwidths[i][j]);
-                double current_total_price = total_price[i-1][k] + prices[i][j];
-                double current_value = current_minimize_bandwidth / current_total_price;
-                if(max_value[i][j] < current_value) {
-                    max_value[i][j] = current_value;
-                    minimize_bandwidth[i][j] = current_minimize_bandwidth;
-                    total_price[i][j] = current_total_price;
+            for(map<int,int>::iterator it = p_device.begin(); it != p_device.end(); ++it) {
+                int bandwidth = min(it->first, bandwidths[i][j]);
+                int price = it->second + prices[i][j];
+                map<int,int>::iterator c_it = c_device.find(bandwidth);
+                if(c_it == c_device.end()) {
+                    c_device[bandwidth] = price;
+                } else {
+                    c_it->second = min(c_it->second, price);
                 }
             }
         }
     }
     
-    double result = max_value[n-1][0];
-    for(int j = 0; j < bandwidths[n-1].size(); j++) {
-        result = max(result, max_value[n-1][j]);
+    int n = bandwidths.size();
+    map<int,int>& c_device = devices[(n-1) % 2];
+    double res = 0;
+    for(map<int,int>::iterator it = c_device.begin(); it != c_device.end(); ++it) {
+        res = max(res, 1.0 * it->first / it->second);
     }
-    return result;
+    return res;
 }
 
 int main() {
