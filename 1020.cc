@@ -23,7 +23,7 @@ bool can(int s, vector<int>& sides, int placed, int n, vector<int>& column) {
         
         bool can_place = true;
         for(int j = next_column; j < next_column+i; j++) {
-            if(column[j] > column[next_column]) {
+            if(column[j] != column[next_column]) {
                 can_place = false;
                 break;
             }
