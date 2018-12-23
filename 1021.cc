@@ -7,39 +7,59 @@ using namespace std;
 typedef pair<int,int> P;
 typedef vector< vector<bool> > Matrix;
 
-void add(multiset<P>& s, int right, int down) {
-    int max_number = max(right, down);
-    int min_number = min(right, down);
-    s.insert(make_pair(min_number, max_number));
+void dfs(int x, int y, vector<P>& result, Matrix& matrix) {
+    static int dx[] = {-1, 1, 0, 0};
+    static int dy[] = {0, 0, 1, -1};
+    
+    result.push_back(make_pair(x, y));
+    matrix[x][y] = false;
+    
+    for(int i = 0; i < 4; i++) {
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        if(nx >= 0 && nx < matrix.size() && ny >= 0 && ny < matrix[0].size() && matrix[nx][ny]) {
+            dfs(nx, ny, result, matrix);
+        }
+    }
 }
 
-void statistic_coordinates(multiset<P>& s, const Matrix& matrix) {
-    int w = matrix.size(), h = matrix[0].size();
-    for(int i = 0; i < w; i++) {
-        for(int j = 0; j < h; j++) {
+int calculate_hash(vector<P>& points) {
+    int res = 0;
+    for(int i = 0; i < points.size(); i++) {
+        P& x = points[i];
+        for(int j = i + 1; j < points.size(); j++) {
+            P& y = points[j];
+            res += (x.first - y.first) * (x.first - y.first)
+                + (x.second - y.second) * (x.second - y.second);
+        }
+    }
+    return res;
+}
+
+void handle(multiset<int>& result_set, Matrix& matrix) {
+    for(int i = 0; i < matrix.size(); i++) {
+        for(int j = 0; j < matrix[0].size(); j++) {
             if(matrix[i][j]) {
-                int right = 0;
-                for(int k = i; k < w && matrix[k][j]; k++) {
-                    ++right;
-                }
-                int down = 0;
-                for(int k = j; k < h && matrix[i][k]; k++) {
-                    ++down;
-                }
-                add(s, right, down);
+                vector<P> result;
+                dfs(i, j, result, matrix);
+                int hash_value = calculate_hash(result);
+                result_set.insert(hash_value);
             }
         }
     }
 }
 
-bool check(multiset<P>& s_left, multiset<P>& s_right) {
-    for(multiset<P>::iterator it = s_left.begin(); it != s_left.end(); ++it) {
-        P t = *it;
-        multiset<P>::iterator t_it = s_right.find(t);
-        if(t_it == s_right.end()) return false;
-        s_right.erase(t_it);
+bool check(multiset<int>& hash_left, multiset<int> hash_right) {
+    for(multiset<int>::iterator it = hash_left.begin(); it != hash_left.end(); ++it) {
+        int t = *it;
+        multiset<int>::iterator t_it = hash_right.find(t);
+        if(t_it != hash_right.end()) {
+            hash_right.erase(t_it);
+        } else {
+            return false;
+        }
     }
-    return s_right.empty();
+    return hash_right.empty();
 }
 
 int main() {
@@ -59,11 +79,11 @@ int main() {
             matrix_right[x][y] = true;
         }
 
-        multiset<P> s_left, s_right;
-        statistic_coordinates(s_left, matrix_left);
-        statistic_coordinates(s_right, matrix_right);
-
-        bool ans = check(s_left, s_right);
+        multiset<int> hash_left, hash_right;
+        handle(hash_left, matrix_left);
+        handle(hash_right, matrix_right);
+        
+        bool ans = check(hash_left, hash_right);
         printf(ans ? "YES\n" : "NO\n");
     }
     return 0;
