@@ -1,72 +1,61 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <string>
 using namespace std;
 
-void print_binary(int* binary, int k) {
+string print_binary(int* binary, int k) {
+    string res = "";
     for(int i = k - 1; i >= 0; i--) {
-        printf("%d", binary[i]);
+        res.append(1, binary[i] + '0');
     }
-    printf("\n");
+    return res;
 }
 
-bool solve_positive(int* binary, char* bit, int k) {
-    int i;
-    for(i = 0; i < k; i++) {
-        if(binary[i] == 1 && bit[i] == 'n') {
-            break;
+bool solve(int* binary, char* bit, int k, bool positive) {
+    int i = 0;
+    while(i < k) {
+        for(; i < k; i++) {
+            if(binary[i] == 1 && bit[i] == (positive ? 'n' : 'p')) {
+                break;
+            }
         }
-    }
-    if(i == k) {
-        return true;
-    }
-    i++;
-    for(; i < k; i++) {
-        if(binary[i] == 0 && bit[i] == 'p') {
-            binary[i] = 1;
-            break;
+        if(i == k) {
+            return true;
         }
-    }
-    if(i == k) {
-        return false;
+        i++;
+        for(; i < k; i++) {
+            if(binary[i] == 0 && bit[i] == (positive ? 'p' : 'n')) {
+                binary[i] = 1;
+                break;
+            }
+            binary[i] = 1 - binary[i];
+        }
+        if(i == k) {
+            return false;
+        }
+        i++;
     }
     return true;
 }
 
-bool solve_negative(int *binary, char* bit, int begin, long long N, int k) {
-    if(begin == 0) {
-        if(N == -1) {
-            binary[0] = 1;
-            return true;
-        }
-        else return false;
+string solve(char* bit, int k, long long N) {
+    reverse(bit, bit+k);
+    int *binary = new int[k];
+    memset(binary, 0, sizeof(int)*k);
+    bool positive = N >= 0;
+    unsigned long long M = N >= 0 ? N : -N;
+    int ptr = 0;
+    while(ptr < k && M) {
+        binary[ptr++] = M % 2;
+        M >>= 1;
     }
-    
-    long long p = 0;
-    p = (1ULL << begin);
-    unsigned long long NN = -N;
-    if(p > NN) {
-        p = p - NN;
-        int ptr = 0;
-        while(ptr < begin && p) {
-            binary[ptr++] = p % 2;
-            p /= 2;
-        }
-        binary[begin] = 1;
-        if(p) return false;
-        return solve_positive(binary, bit, begin);
-    } else if(p == NN) {
-        binary[begin] = 1;
-        return true;
-    } else {
-        binary[begin] = 1;
-        int index = begin-1;
-        for(; index >= 0; index--) {
-            if(bit[index] == 'n') break;
-        }
-        if(index == -1) return false;
-        return solve_negative(binary, bit, index, N+(1<<begin), k);
+    string res = "Impossible";
+    if(!M && solve(binary, bit, k, positive)) {
+        res = print_binary(binary, k);
     }
+    delete[] binary;
+    return res;
 }
 
 int main() {
@@ -76,81 +65,37 @@ int main() {
         scanf("%d", &k);
         char *bit = new char[k+1];
         scanf("%s", bit);
-        reverse(bit, bit+k);
         long long N;
-        unsigned long long M;
-        int upper = k;
-        scanf("%I64d", &N);
-        int *binary = new int[k];
-        memset(binary, 0, sizeof(int)*k);
-        if(N >= 0) {
-            int ptr = 0;
-            while(ptr < k && N) {
-                binary[ptr++] = N % 2;
-                N /= 2;
-            }
-            if(N == 0) {
-                bool ans = solve_positive(binary, bit, k);
-                if(ans) {
-                    print_binary(binary, k);
-                } else {
-                    printf("Impossible\n");
-                }
-            } else {
-                printf("Impossible\n");
-            }
-        } else {
-            int i;
-            for(i = k - 1; i >= 0; i--) {
-                if(bit[i] == 'n') {
-                    break;
-                }
-            }
-            if(i == -1) {
-                printf("Impossible\n");
-            } else {
-                bool ans = false;
-                for(int i = k-1; i >= 0; i--) {
-                    memset(binary, 0, sizeof(int)*k);
-                    if(bit[i] == 'n') {
-                        ans = solve_negative(binary, bit, i, N, k);
-                        if(ans) break;
-                    }
-                }
-                
-                if(ans) {
-                    print_binary(binary, k);
-                } else {
-                    printf("Impossible\n");
-                }
-            }
-        }
-        delete[] binary;
+        scanf("%lld", &N);
+        printf("%s\n", solve(bit, k, N).c_str());
         delete[] bit;
     }
     return 0;
 }
 
 /*
+Input:
 5
- 
 4
 nppp
 -5
-1011
- 
 4
 ppnn
 10
-1110
- 
 3
 pnp
 6
-Impossible
- 
 4
 ppnn
 -3
+5
+pnppn
+11
+--------------
+Output:
+1011
+1110
+Impossible
 0011
- */
+11101
+*/
