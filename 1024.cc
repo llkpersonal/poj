@@ -100,21 +100,19 @@ bool check_unique_and_shortest(int tx, int ty, int w, int h, wallset& walls) {
     
     if(count != 1) return false;
     
-    int previous_x = -1, previous_y = -1;
     while(tx != 0 || ty != 0) {
         int cnt = 0;
         int xx = tx, yy = ty;
         for(int i = 0; i < 4; i++) {
             int nx = xx + dx[i], ny = yy + dy[i];
-            if((nx != previous_x || ny != previous_y) &&
-                check_boundary(w, h, nx, ny) && f[xx][yy] == f[nx][ny] + 1) {
+            if(check_boundary(w, h, nx, ny)
+                    && not_wall(xx, yy, nx, ny, walls)
+                    && f[xx][yy] == f[nx][ny] + 1) {
                 ++cnt;
                 tx = nx;
                 ty = ny;
             }
         }
-        previous_x = tx;
-        previous_y = ty;
         if(cnt > 1) return false;
     }
     
@@ -157,11 +155,7 @@ int main() {
             walls.insert(make_pair(make_pair(x1,y1), make_pair(x2,y2)));
         }
         
-        if(check_correct(w, h, walls)) {
-            printf("CORRECT\n");
-        } else {
-            printf("INCORRECT\n");
-        }
+        printf(check_correct(w, h, walls) ? "CORRECT\n" : "INCORRECT\n");
     }
     return 0;
 }
