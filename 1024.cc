@@ -97,8 +97,6 @@ bool check_unique_and_shortest(int tx, int ty, int w, int h, wallset& walls) {
         }
     }
     
-    if(count != 1) return false;
-    
     while(tx != 0 || ty != 0) {
         int cnt = 0;
         int xx = tx, yy = ty;
