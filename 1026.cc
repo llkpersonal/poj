@@ -1,19 +1,21 @@
 #include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <vector>
 using namespace std;
 
-void roll(char* text, vector<int>& roll_vec) {
+void roll(char* text, vector<int>& roll_vec, int k) {
     int n = roll_vec.size();
-    char c = text[roll_vec[0]];
-    for(int i = 0; i < n-1; i++) {
-        int p = roll_vec[i];
-        int q = roll_vec[i+1];
-        c = text[q];
-        text[q] = text[p];
+    char t_text[222];
+    for(int i = 0; text[i] != '\0'; i++) {
+        t_text[i] = text[i];
     }
-    text[roll_vec[0]] = c;
+    for(int i = 0; i < n; i++) {
+        int id = (i+k)%n;
+        t_text[roll_vec[id]] = text[roll_vec[i]];
+    }
+    for(int i = 0; text[i] != '\0'; i++) {
+        text[i] = t_text[i];
+    }
 }
 
 void encode(const char* raw_text, char* output_text, int n, vector<int>& p, int k) {
@@ -31,7 +33,6 @@ void encode(const char* raw_text, char* output_text, int n, vector<int>& p, int 
     for(i = 0; i < n; i++) {
         if(!vis[i]) {
             pc.clear();
-            pc.push_back(i);
             int id = i;
             do{
                 vis[id] = true;
@@ -40,16 +41,9 @@ void encode(const char* raw_text, char* output_text, int n, vector<int>& p, int 
             } while(id != i);
             int mod = pc.size();
             int k_count = k % mod;
-            while(k_count--) {
-                roll(output_text, pc);
-            }
+            roll(output_text, pc, k_count);
         }
     }
-}
-
-void print_output_text(const char* output_text, int n) {
-    for(int i = 0; i < n; i++) printf("%c", output_text[i]);
-    printf("\n");
 }
 
 int main() {
@@ -62,11 +56,14 @@ int main() {
             p[i]--;
         }
         int k;
-        scanf("%d", &k);
-        gets(raw_text);
-        char output_text[222];
-        encode(raw_text, output_text, n, p, k);
-        print_output_text(output_text, n);
+        while(scanf("%d", &k)!=0 && k) {
+            getchar();
+            gets(raw_text);
+            char output_text[222];
+            encode(raw_text, output_text, n, p, k);
+            puts(output_text);
+        }
+        printf("\n");
     }
     return 0;
 }
